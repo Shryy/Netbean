@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Student Enrollment Form</title>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="http://login2explore.com/jpdb/resources/js/0.0.3/jpdb-commons.js"></script>
+        <script>
+            const jpdbBaseURL = "http://api.login2explore.com:5577";
+            const connToken = "90934373|-31949228033732020|90957103";
+            const dbName = "Student";
+            const tableName = "Student-Rel";
+
+            function resetForm() {
+                $("#rollNo").val("").prop("disabled", false);
+                $("#fullName, #class, #birthDate, #address, #enrollmentDate, #email, #mobileno, #name").val("").prop("disabled", true);
+                $("#saveBtn, #updateBtn").prop("disabled", true);
+                $("#rollNo").focus();
+            }
+
+            function validateData() {
+                return $("#rollNo").val() && $("#fullName").val() && $("#class").val() && $("#birthDate").val() &&
+                        $("#address").val() && $("#enrollmentDate").val() && $("#email").val() && $("#mobileno").val() && $("#name").val();
+            }
+
+            function saveData() {
+                if (!validateData()) {
+                    alert("Please fill all fields.");
+                    return;
+                }
+
+                const jsonData = {
+                    rollNo: $("#rollNo").val(),
+                    fullName: $("#fullName").val(),
+                    class: $("#class").val(),
+                    birthDate: $("#birthDate").val(),
+                    address: $("#address").val(),
+                    enrollmentDate: $("#enrollmentDate").val(),
+                    email: $("#email").val(),
+                    mobileno: $("#mobileno").val(),
+                    name: $("#name").val()
+                };
+
+                const saveRequest = {
+                    token: connToken,
+                    dbName: dbName,
+                    rel: tableName,
+                    cmd: "PUT",
+                    jsonStr: JSON.stringify(jsonData)
+                };
+
+                $.post(`${jpdbBaseURL}/api/irl`, saveRequest, (response) => {
+                    alert("Data saved successfully!");
+                    resetForm();
+                }).fail(() => {
+                    alert("Error saving data.");
+                });
+            }
+
+            function updateData() {
+                if (!validateData()) {
+                    alert("Please fill all fields.");
+                    return;
+                }
+                const jsonData = {
+                    rollNo: $("#rollNo").val(),
+                    fullName: $("#fullName").val(),
+                    class: $("#class").val(),
+                    birthDate: $("#birthDate").val(),
+                    address: $("#address").val(),
+                    enrollmentDate: $("#enrollmentDate").val(),
+                    email: $("#email").val(),
+                    mobileno: $("#mobileno").val(),
+                    name: $("#name").val()
+                };
+                const updateRequest = {
+                    token: connToken,
+                    dbName: dbName,
+                    rel: tableName,
+                    cmd: "UPDATE",
+                    jsonStr: JSON.stringify(jsonData)
+                };
+                $.post(`${jpdbBaseURL}/api/irl`, updateRequest, (response) => {
+                    alert("Data updated successfully!");
+                    resetForm();
+                }).fail(() => {
+                    alert("Error updating data.");
+                });
+            }
+
+            function checkPrimaryKey() {
+                const rollNo = $("#rollNo").val();
+                if (!rollNo) {
+                    alert("Please enter Roll No.");
+                    return;
+                }
+
+                const getRequest = {
+                    token: connToken,
+                    dbName: dbName,
+                    rel: tableName,
+                    cmd: "GET",
+                    jsonStr: JSON.stringify({ rollNo: rollNo })
+                };
+
+                $.post(`${jpdbBaseURL}/api/irl`, getRequest, (response) => {
+                    if (response.status === "SUCCESS") {
+                        const data = JSON.parse(response.data);
+                        $("#fullName").val(data.fullName).prop("disabled", false);
+                        $("#class").val(data.class).prop("disabled", false);
+                        $("#birthDate").val(data.birthDate).prop("disabled", false);
+                        $("#address").val(data.address).prop("disabled", false);
+                        $("#enrollmentDate").val(data.enrollmentDate).prop("disabled", false);
+                        $("#email").val(data.email).prop("disabled", false);
+                        $("#mobileno").val(data.mobileno).prop("disabled", false);
+                        $("#name").val(data.name).prop("disabled", false);
+                        $("#saveBtn").prop("disabled", true);
+                        $("#updateBtn").prop("disabled", false);
+                        $("#rollNo").prop("disabled", true);
+                    } else {
+                        $("#fullName, #class, #birthDate, #address, #enrollmentDate, #email, #mobileno, #name")
+                            .prop("disabled", false);
+                        $("#saveBtn").prop("disabled", false);
+                        $("#updateBtn").prop("disabled", true);
+                    }
+                }).fail(() => {
+                    alert("Error checking primary key.");
+                });
+            }
+
+            $(document).ready(() => {
+                resetForm();
+                $("#saveBtn").click(saveData);
+                $("#updateBtn").click(updateData);
+                $("#rollNo").change(checkPrimaryKey);
+                $("#resetBtn").click(resetForm);
+            });
+        </script>
+    </head>
+    <body>
+        <h2>Student Enrollment Form</h2>
+        <form>
+            <label>Roll No:</label><input type="text" id="rollNo"><br>
+            <label>Full Name:</label><input type="text" id="fullName" disabled><br>
+            <label>Class:</label><input type="text" id="class" disabled><br>
+            <label>Birth Date:</label><input type="date" id="birthDate" disabled><br>
+            <label>Address:</label><input type="text" id="address" disabled><br>
+            <label>Enrollment Date:</label><input type="date" id="enrollmentDate" disabled><br>
+            <label>Email:</label><input type="email" id="email" disabled><br>
+            <label>Mobile No:</label><input type="text" id="mobileno" disabled><br>
+            <label>Name:</label><input type="text" id="name" disabled><br>
+            <button type="button" id="saveBtn" disabled>Save</button>
+            <button type="button" id="updateBtn" disabled>Update</button>
+            <button type="button" id="resetBtn">Reset</button>
+        </form>
+    </body>
+</html>
